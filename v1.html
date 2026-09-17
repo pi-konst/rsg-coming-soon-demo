@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coming Soon strip — layout proposal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/*
+ * A proposal for the Coming Soon block on /portfolio/. Standalone: the surrounding page is
+ * sketched with placeholders so the strip can be judged against the Featured row above it
+ * and the grid below it. Two variants of the same strip: A keeps a thin timeline under the
+ * covers, B drops it and lets the date pills carry the order.
+ *
+ * Sizes are CSS variables so the card width per breakpoint is one line to tune.
+ */
+:root {
+    --bg: #131313;
+    --text: #F2F2F2;
+    --muted: #9D9C9D;
+    --line: #333333;
+    --red: #B61A39;
+    --red-dark: #5C0D1D;
+    --card: 176px;
+    --gap: 12px;
+    --radius: 14px;
+    --inset: 40px;
+}
+@media (max-width: 1023px) { :root { --card: 152px; --inset: 24px; } }
+@media (max-width: 767px)  { :root { --card: 136px; --inset: 16px; } }
+@media (max-width: 539px)  { :root { --card: 124px; --gap: 10px; --radius: 12px; } }
+@media (max-width: 359px)  { :root { --card: 112px; } }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: Montserrat, sans-serif; }
+a { color: inherit; text-decoration: none; }
+.page { max-width: 1280px; margin: 0 auto; padding: 0 var(--inset); }
+
+/* ------------------------------------------------------------- page sketch */
+.hdr { height: 64px; margin: 16px 0 24px; border-radius: 16px; background: #1D1D1D; display: flex; align-items: center; padding: 0 20px; gap: 24px; }
+.hdr__logo { font-weight: 700; font-size: 12px; line-height: 12px; letter-spacing: .02em; }
+.hdr__nav { margin-left: auto; display: flex; gap: 20px; font-weight: 700; font-size: 12px; }
+.hdr__cta { background: var(--red); padding: 10px 14px; border-radius: 8px; }
+@media (max-width: 767px) { .hdr__nav { display: none; } }
+
+.sketch { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+@media (max-width: 767px) { .sketch { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 539px) { .sketch { grid-template-columns: 1fr; } }
+.sketch__tile { aspect-ratio: 1; border-radius: 18px; border: 1px solid rgba(242,242,242,.08); background: linear-gradient(160deg, #262626, #1A1A1A); display: grid; place-items: center; color: #555; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.sketch__tile--tall { aspect-ratio: 1 / 1.25; }
+.section-gap { height: 24px; }
+
+/* ------------------------------------------------------------- the strip */
+.cs { position: relative; padding: 16px 0 12px; margin: 0 0 8px; }
+
+.cs__head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; min-height: 28px; }
+.cs__label { font-weight: 700; font-size: 12px; line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.cs__label b { color: var(--text); font-weight: 700; }
+.cs__count { color: var(--muted); font-weight: 600; }
+
+/* Arrows live in the head, not under the row: they cost no height and sit where the eye already is.
+   Shown only when the row overflows and the device has a pointer. */
+.cs__nav { margin-left: auto; display: none; gap: 6px; }
+.cs.is-more .cs__nav { display: flex; }
+@media (hover: none) { .cs.is-more .cs__nav { display: none; } }
+.cs__arrow { width: 28px; height: 28px; border-radius: 8px; border: 1px solid rgba(242,242,242,.14); background: transparent; color: var(--text); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.cs__arrow:hover { background: rgba(242,242,242,.08); }
+.cs__arrow:disabled { opacity: .3; cursor: default; }
+
+.cs__scroller { position: relative; }
+/* Edge fades say "there is more" without a scrollbar, a dot row or a second nav. */
+.cs__scroller::before, .cs__scroller::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 48px; pointer-events: none; z-index: 2;
+    opacity: 0; transition: opacity .2s;
+}
+.cs__scroller::before { left: 0; background: linear-gradient(90deg, var(--bg), transparent); }
+.cs__scroller::after { right: 0; background: linear-gradient(270deg, var(--bg), transparent); }
+.cs.is-more.can-prev .cs__scroller::before { opacity: 1; }
+.cs.is-more.can-next .cs__scroller::after { opacity: 1; }
+
+.cs__row { display: flex; gap: var(--gap); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.cs__row::-webkit-scrollbar { display: none; }
+
+.cs__item { flex: 0 0 var(--card); scroll-snap-align: start; display: block; outline: none; }
+.cs__cover { position: relative; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; border: 1px solid rgba(242,242,242,.1); background: #222; }
+.cs__cover img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+.cs__item:hover .cs__cover img, .cs__item:focus-visible .cs__cover img { transform: scale(1.05); }
+.cs__item:focus-visible .cs__cover { box-shadow: 0 0 0 2px var(--red); }
+
+/* The date is the one fact this block exists for, so it is the first thing on the card. */
+.cs__date { position: absolute; top: 8px; left: 8px; z-index: 1; padding: 3px 7px; border-radius: 6px; background: rgba(19,19,19,.8); backdrop-filter: blur(4px); font-weight: 600; font-size: 11px; line-height: 14px; color: #fff; letter-spacing: .02em; }
+.cs__item--major .cs__date { background: radial-gradient(80% 80% at 50% 50%, #C21A3C 0%, #B61A39 60%, var(--red-dark) 100%); }
+
+/* Caption over the cover instead of under it: the cover's bottom third is what pays for the text. */
+.cs__caption { position: absolute; left: 0; right: 0; bottom: 0; padding: 32px 10px 9px; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 45%, rgba(0,0,0,.85) 100%); }
+.cs__title { margin: 0; font-weight: 700; font-size: 12px; line-height: 15px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cs__kicker { margin: 0; font-weight: 400; font-size: 11px; line-height: 14px; color: #CFCFCF; max-height: 0; opacity: 0; overflow: hidden; transition: max-height .25s ease, opacity .25s ease; }
+.cs__item:hover .cs__kicker, .cs__item:focus-visible .cs__kicker { max-height: 28px; opacity: 1; margin-top: 3px; }
+@media (max-width: 539px) {
+    .cs__caption { padding: 24px 8px 7px; }
+    .cs__title { font-size: 11px; line-height: 14px; -webkit-line-clamp: 2; }
+    .cs__date { font-size: 10px; line-height: 13px; padding: 2px 6px; top: 6px; left: 6px; }
+}
+
+/* Variant A — a thin timeline under the covers. 18px tall, scrolls with the cards. */
+.cs__tick { position: relative; height: 18px; margin-top: 8px; }
+.cs__tick::before { content: ""; position: absolute; top: 50%; left: 0; width: calc(100% + var(--gap)); height: 2px; margin-top: -1px; background: var(--line); }
+.cs__item:first-child .cs__tick::before { left: 50%; width: calc(50% + var(--gap)); }
+.cs__item:last-child .cs__tick::before { width: 50%; }
+.cs__item:only-child .cs__tick::before { content: none; }
+.cs__tick::after { content: ""; position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--text); transition: transform .25s, background .25s; }
+.cs__item--major .cs__tick::after { width: 12px; height: 12px; margin: -6px 0 0 -6px; }
+.cs__item:hover .cs__tick::after { background: var(--red); transform: scale(1.4); }
+.cs--plain .cs__tick { display: none; }
+
+/* --------------------------------------------------------- measurement note */
+.note { margin: 8px 0 0; font-size: 11px; line-height: 16px; color: #666; font-weight: 600; letter-spacing: .04em; }
+.note b { color: #999; }
+.divider { margin: 40px 0 24px; border-top: 1px dashed #2A2A2A; padding-top: 16px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #555; }
+</style>
+</head>
+<body>
+<div class="page">
+
+    <div class="hdr">
+        <div class="hdr__logo">RETRO<br>STYLE<br>GAMES</div>
+        <div class="hdr__nav"><span>SERVICES</span><span>PORTFOLIO</span><span>ABOUT</span><span>BLOG</span><span>CAREERS</span><span>OUR GAMES</span><span class="hdr__cta">HIRE US</span></div>
+    </div>
+
+    <div class="sketch" aria-hidden="true">
+        <div class="sketch__tile sketch__tile--tall">Featured</div>
+        <div class="sketch__tile sketch__tile--tall">Featured</div>
+        <div class="sketch__tile sketch__tile--tall">Featured</div>
+        <div class="sketch__tile sketch__tile--tall">Featured</div>
+    </div>
+
+    <div class="section-gap"></div>
+
+    <!-- Variant A: strip with a thin timeline -->
+    <section class="cs cs--timeline" id="variant-a" aria-label="Coming soon">
+        <div class="cs__head">
+            <div class="cs__label"><b>Coming soon</b> <span class="cs__count">· 9</span></div>
+            <div class="cs__nav">
+                <button type="button" class="cs__arrow" data-dir="-1" aria-label="Previous"><svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" class="cs__arrow" data-dir="1" aria-label="Next"><svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M1 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
+        </div>
+        <div class="cs__scroller">
+            <div class="cs__row" data-cards></div>
+        </div>
+        <p class="note" data-measure="variant-a"></p>
+    </section>
+
+    <div class="section-gap"></div>
+
+    <div class="sketch" aria-hidden="true">
+        <div class="sketch__tile">Grid tile</div>
+        <div class="sketch__tile">Grid tile</div>
+        <div class="sketch__tile">Grid tile</div>
+        <div class="sketch__tile">Grid tile</div>
+    </div>
+
+    <div class="divider">Variant B — same strip, no timeline (for comparison only)</div>
+
+    <section class="cs cs--plain" id="variant-b" aria-label="Coming soon">
+        <div class="cs__head">
+            <div class="cs__label"><b>Coming soon</b> <span class="cs__count">· 9</span></div>
+            <div class="cs__nav">
+                <button type="button" class="cs__arrow" data-dir="-1" aria-label="Previous"><svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" class="cs__arrow" data-dir="1" aria-label="Next"><svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M1 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
+        </div>
+        <div class="cs__scroller">
+            <div class="cs__row" data-cards></div>
+        </div>
+        <p class="note" data-measure="variant-b"></p>
+    </section>
+
+    <div class="section-gap"></div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    // The nine projects the live block shows on 17.09.2026, in release-date order.
+    var CARDS = [
+        { date: '22.09.2026', title: 'Last Wizard Co-op Kit', kicker: 'Friendslop Stylized Assets', major: false, img: 'https://images.retrostylegames.com/wp-content/uploads/2026/07/last-wizard-key-art-square-store-480x480.jpg' },
+        { date: '25.09.2026', title: 'Odin’s Vault', kicker: 'Slot 2D Art & Character Design', major: true, img: 'https://images.retrostylegames.com/wp-content/uploads/2026/08/OdinsVault-ComingSoon-972972-site-480x480.jpg' },
+        { date: '06.11.2026', title: 'Adventure Escape Mysteries', kicker: '2D Character Art & Background', major: false, img: 'https://images.retrostylegames.com/wp-content/uploads/2026/07/Haiku_E43_02_972972-no_label-480x480.jpg' },
+        { date: '13.11.2026', title: 'Guardians of the Wild Sky', kicker: '3D Fantasy Character Models', major: true, img: 'https://images.retrostylegames.com/wp-content/uploads/2026/04/Guardians-of-the-Wild-Sky-st02-972%D1%85972-768x768.jpg' },
+        { date: '19.11.2026', title: 'Iron Games', kicker: 'UI/UX & Icon Design', major: false, img: 'https://images.retrostylegames.com/wp-content/uploads/2026/06/diggy-match-portfolio-art-480x480.png' },
+        { date: '24.11.2026', title: 'Little Monsters', kicker: '3D Slot Game Characters, Backgrounds & UI/UX', major: false, img: 'https://images.retrostylegames.com/wp-content/uploads/2026/05/972%D1%85972-clean-768x768.png' },
+        { date: '26.11.2026', title: 'Puzzle Town Mysteries', kicker: '2D Backgrounds, Characters & UI/UX', major: false, img: 'https://images.retrostylegames.com/wp-content/uploads/2026/07/Puzzle-Town-Mysteries-Cover-480x480.jpg' },
+        { date: '30.11.2026', title: 'Silkroad Online', kicker: '3D Game Character Outfits & Accessories', major: false, img: 'https://images.retrostylegames.com/wp-content/uploads/2026/05/Gamegami-Silkroad-Part2-st02-972%D1%85972-800x800.jpg' },
+        { date: '04.12.2026', title: 'Titan Ways', kicker: 'Slot Game Art & UI/UX', major: false, img: 'https://images.retrostylegames.com/wp-content/uploads/2026/08/TitanWays-ComingSoon-972972_Site-01-800x800.jpg' }
+    ];
+
+    function card(c) {
+        var a = document.createElement('a');
+        a.href = '#';
+        a.className = 'cs__item' + (c.major ? ' cs__item--major' : '');
+        a.innerHTML =
+            '<div class="cs__cover">' +
+                '<span class="cs__date">' + c.date + '</span>' +
+                '<img src="' + c.img + '" alt="" loading="eager" width="480" height="480">' +
+                '<div class="cs__caption"><h3 class="cs__title">' + c.title + '</h3><p class="cs__kicker">' + c.kicker + '</p></div>' +
+            '</div>' +
+            '<div class="cs__tick" aria-hidden="true"></div>';
+        return a;
+    }
+
+    function setup(section) {
+        var row = section.querySelector('.cs__row');
+        CARDS.forEach(function (c) { row.appendChild(card(c)); });
+
+        var prev = section.querySelector('[data-dir="-1"]');
+        var next = section.querySelector('[data-dir="1"]');
+
+        function sync() {
+            var more = row.scrollWidth > row.clientWidth + 1;
+            section.classList.toggle('is-more', more);
+            var atStart = row.scrollLeft <= 1;
+            var atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 1;
+            section.classList.toggle('can-prev', more && !atStart);
+            section.classList.toggle('can-next', more && !atEnd);
+            prev.disabled = atStart;
+            next.disabled = atEnd;
+            measure(section);
+        }
+
+        function step(dir) {
+            var item = row.querySelector('.cs__item');
+            var gap = parseFloat(getComputedStyle(row).gap) || 0;
+            var unit = item.getBoundingClientRect().width + gap;
+            var visible = Math.max(1, Math.floor((row.clientWidth + gap) / unit));
+            row.scrollBy({ left: dir * unit * visible, behavior: 'smooth' });
+        }
+
+        prev.addEventListener('click', function () { step(-1); });
+        next.addEventListener('click', function () { step(1); });
+        row.addEventListener('scroll', sync, { passive: true });
+        window.addEventListener('resize', sync);
+        sync();
+    }
+
+    // Live numbers in the page, so a screenshot carries them.
+    function measure(section) {
+        var note = section.querySelector('[data-measure]');
+        var h = Math.round(section.getBoundingClientRect().height - note.getBoundingClientRect().height);
+        var pct = Math.round(h / window.innerHeight * 100);
+        var item = section.querySelector('.cs__item');
+        var w = item ? Math.round(item.getBoundingClientRect().width) : 0;
+        note.innerHTML = 'strip <b>' + h + 'px</b> = <b>' + pct + '%</b> of a ' + window.innerWidth + '×' + window.innerHeight + ' viewport · card ' + w + 'px';
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('.cs'), setup);
+})();
+</script>
+</body>
+</html>
