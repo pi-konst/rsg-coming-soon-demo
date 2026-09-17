@@ -3,59 +3,90 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coming Soon strip — v2 (after review)</title>
+<title>Coming Soon strip — v3 (date under the cover)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 /*
- * v2 of the Coming Soon strip, with the review's accepted findings applied:
- *   - no timeline; ordered date pills carry the sequence
- *   - title under the square, two lines, never over the artwork; no kicker
- *   - card floor 136 px on phones and foldable cover screens
- *   - arrows whenever the row overflows, on every input type; 16 px edge fades
- *   - one upcoming project is one card in the strip, no grid relocation
- *   - list semantics, <time>, a heading, real destinations, an inset focus ring
+ * v3 of the Coming Soon strip. Changes against v2, from the owner's feedback:
+ *   - nothing is drawn over the artwork: date, title and kind of work sit under the square
+ *   - date on the right of the title, kind of work in grey under both
+ *   - one date colour for every project (the red pill for "major" is gone)
+ * The surroundings are real: the Featured tiles and the first grid tiles of /portfolio/ on
+ * 17.09.2026, with the live site's sizes, radii, borders and partner band.
  */
 :root {
     --bg: #131313;
+    --panel: #1D1D1D;
     --text: #F2F2F2;
     --muted: #9D9C9D;
     --red: #B61A39;
-    --red-dark: #5C0D1D;
+    --date: #C4223F;
+    --tile-border: rgba(242, 242, 242, .1);
     --card: 176px;
     --gap: 12px;
     --radius: 14px;
     --inset: 40px;
+    --strip-gap: 32px;
 }
 @media (max-width: 1023px) { :root { --card: 152px; --inset: 24px; } }
-@media (max-width: 767px)  { :root { --card: 136px; --inset: 16px; --gap: 10px; --radius: 12px; } }
+@media (max-width: 767px)  { :root { --card: 136px; --inset: 16px; --gap: 10px; --radius: 12px; --strip-gap: 24px; } }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--text); font-family: Montserrat, sans-serif; }
 a { color: inherit; text-decoration: none; }
-.page { max-width: 1280px; margin: 0 auto; padding: 0 var(--inset); }
+.page { max-width: 1425px; margin: 0 auto; padding: 0 var(--inset); }
 
-/* ------------------------------------------------------------- page sketch */
-.hdr { height: 64px; margin: 16px 0 24px; border-radius: 16px; background: #1D1D1D; display: flex; align-items: center; padding: 0 20px; gap: 24px; }
+/* ------------------------------------------------------------- page chrome */
+.hdr { height: 64px; margin: 16px 0 24px; border-radius: 16px; background: var(--panel); display: flex; align-items: center; padding: 0 20px; gap: 24px; }
 .hdr__logo { font-weight: 700; font-size: 12px; line-height: 12px; letter-spacing: .02em; }
 .hdr__nav { margin-left: auto; display: flex; gap: 20px; font-weight: 700; font-size: 12px; }
 .hdr__cta { background: var(--red); padding: 10px 14px; border-radius: 8px; }
 @media (max-width: 767px) { .hdr__nav { display: none; } }
-.sketch { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-@media (max-width: 767px) { .sketch { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 539px) { .sketch { grid-template-columns: 1fr; } }
-.sketch__tile { aspect-ratio: 1; border-radius: 18px; border: 1px solid rgba(242,242,242,.08); background: linear-gradient(160deg, #262626, #1A1A1A); display: grid; place-items: center; color: #555; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
-.sketch__tile--tall { aspect-ratio: 1 / 1.25; }
-.section-gap { height: 24px; }
 
-/* ------------------------------------------------------------- the strip */
-.cs { position: relative; padding: 16px 0 12px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 60px; }
+.filters__chip { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--tile-border); font-weight: 600; font-size: 13px; color: var(--muted); }
+.filters__chip--on { background: var(--red); color: #fff; border-color: transparent; }
+@media (max-width: 767px) { .filters { margin-bottom: 32px; } .filters__chip:nth-child(n+5) { display: none; } }
+
+/* --------------------------------------------------------------- featured */
+.featured { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+@media (max-width: 1023px) { .featured { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 539px)  { .featured { grid-template-columns: 1fr; } }
+.ftile { position: relative; display: block; border-radius: 18px; border: 1px solid var(--tile-border); overflow: hidden; background: var(--panel); isolation: isolate; }
+.ftile__img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.ftile__partner { height: 80px; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--panel); }
+.ftile__partner img { height: 32px; width: auto; max-width: 100px; object-fit: contain; filter: grayscale(1) brightness(1.4); }
+/* The site's red glow at the bottom edge of a Featured tile. */
+.ftile::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 60%; pointer-events: none; z-index: 0; opacity: .55;
+    background: radial-gradient(50% 50% at 87.55% 100%, rgba(251,91,123,.55) 0%, rgba(182,26,57,.35) 27.88%, rgba(29,29,29,0) 100%); }
+.ftile__panel { position: absolute; left: 0; right: 0; bottom: 80px; z-index: 1; padding: 24px; background: rgba(29,29,29,.94); transform: translateY(100%); transition: transform .35s ease; display: flex; flex-direction: column; gap: 16px; }
+.ftile:hover .ftile__panel, .ftile:focus-visible .ftile__panel { transform: translateY(0); }
+.ftile__title { margin: 0; font-size: 27px; line-height: 1.15; font-weight: 600; }
+.ftile__kicker { margin: 8px 0 0; font-size: 16px; line-height: 1.4; font-weight: 400; }
+.ftile__metrics { display: flex; justify-content: space-between; gap: 12px; }
+.ftile__metric b { display: block; font-size: 16px; line-height: 1.6; font-weight: 700; text-transform: uppercase; }
+.ftile__metric span { font-size: 13px; color: var(--muted); }
+@media (max-width: 767px) { .ftile__panel { position: static; transform: none; padding: 16px; } .ftile__title { font-size: 20px; } .ftile__kicker { font-size: 14px; } }
+
+/* ------------------------------------------------------------------- grid */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 1023px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 539px)  { .grid { grid-template-columns: 1fr; } }
+.gtile { position: relative; display: block; border-radius: 18px; border: 1px solid var(--tile-border); overflow: hidden; background: var(--panel); }
+.gtile__img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.gtile__overlay { position: absolute; inset: 0; padding: 30px; opacity: 0; transition: opacity .3s; background: linear-gradient(rgba(39,39,39,.3) 0%, rgba(0,0,0,.5) 22.67%, rgba(0,0,0,.7) 100%); display: flex; flex-direction: column; justify-content: flex-end; }
+.gtile:hover .gtile__overlay, .gtile:focus-visible .gtile__overlay { opacity: 1; }
+.gtile__overlay h3 { margin: 0 0 12px; font-size: 18px; line-height: 20px; font-weight: 600; }
+.gtile__overlay p { margin: 0; font-size: 14px; line-height: 1.5; color: #DDD; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* -------------------------------------------------------------- the strip */
+.cs { position: relative; margin: var(--strip-gap) 0; }
 
 .cs__head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; min-height: 36px; }
 .cs__title { margin: 0; font-weight: 700; font-size: 12px; line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--text); }
 .cs__count { color: var(--muted); font-weight: 600; }
 
-/* Arrows: in the head, shown whenever the row overflows, on every input. 36 px visible, 44 px hit area. */
 .cs__nav { margin-left: auto; display: none; gap: 8px; }
 .cs.is-more .cs__nav { display: flex; }
 .cs__arrow { position: relative; width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(242,242,242,.16); background: transparent; color: var(--text); display: grid; place-items: center; cursor: pointer; padding: 0; }
@@ -65,16 +96,13 @@ a { color: inherit; text-decoration: none; }
 .cs__arrow:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
 .cs__scroller { position: relative; }
-.cs__scroller::before, .cs__scroller::after {
-    content: ""; position: absolute; top: 0; bottom: 0; width: 16px; pointer-events: none; z-index: 2;
-    opacity: 0; transition: opacity .2s;
-}
+.cs__scroller::before, .cs__scroller::after { content: ""; position: absolute; top: 0; bottom: 0; width: 16px; pointer-events: none; z-index: 2; opacity: 0; transition: opacity .2s; }
 .cs__scroller::before { left: 0; background: linear-gradient(90deg, var(--bg), transparent); }
 .cs__scroller::after { right: 0; background: linear-gradient(270deg, var(--bg), transparent); }
 .cs.can-prev .cs__scroller::before { opacity: 1; }
 .cs.can-next .cs__scroller::after { opacity: 1; }
 
-.cs__list { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--gap); overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-padding: 0 16px; }
+.cs__list { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--gap); overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .cs__list::-webkit-scrollbar { display: none; }
 .cs__item { flex: 0 0 var(--card); scroll-snap-align: start; }
 
@@ -82,27 +110,28 @@ a { color: inherit; text-decoration: none; }
 .cs__link:focus-visible { outline: none; }
 .cs__link:focus-visible .cs__cover { box-shadow: inset 0 0 0 2px var(--text); }
 
-.cs__cover { position: relative; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; border: 1px solid rgba(242,242,242,.1); background: #222; }
+/* The cover is the whole square; nothing is drawn over it. */
+.cs__cover { aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--tile-border); background: #222; }
 .cs__cover img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
 .cs__link:hover .cs__cover img { transform: scale(1.05); }
 
-/* Opaque pill: no backdrop-filter, so contrast does not depend on the art. */
-.cs__date { position: absolute; top: 8px; left: 8px; z-index: 1; padding: 3px 7px; border-radius: 6px; background: #161616; font-weight: 600; font-size: 11px; line-height: 14px; color: #fff; letter-spacing: .02em; }
-.cs__item--major .cs__date { background: radial-gradient(80% 80% at 50% 50%, #C21A3C 0%, #B61A39 60%, var(--red-dark) 100%); }
-
-/* Caption under the square: the art stays whole, the name stays readable. Two lines reserved so the row keeps one height. */
-.cs__name { margin: 6px 2px 0; font-weight: 700; font-size: 12px; line-height: 16px; height: 32px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+/* Under the square: title with the date on its right, then the kind of work in grey.
+   Two title lines are reserved so the row keeps one height. */
+.cs__meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin: 8px 2px 0; }
+.cs__name { margin: 0; font-weight: 700; font-size: 12px; line-height: 16px; height: 32px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cs__date { flex: 0 0 auto; font-weight: 600; font-size: 11px; line-height: 16px; color: var(--date); white-space: nowrap; }
+.cs__kind { margin: 2px 2px 0; font-weight: 400; font-size: 11px; line-height: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cs__link:hover .cs__name { color: #fff; }
 
-.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-
 @media (prefers-reduced-motion: reduce) {
-    .cs__cover img, .cs__scroller::before, .cs__scroller::after { transition: none; }
+    .cs__cover img, .cs__scroller::before, .cs__scroller::after, .ftile__panel, .gtile__overlay { transition: none; }
     .cs__link:hover .cs__cover img { transform: none; }
 }
 
 .note { margin: 8px 0 0; font-size: 11px; line-height: 16px; color: #666; font-weight: 600; letter-spacing: .04em; }
 .note b { color: #999; }
+.versions { margin: 48px 0 24px; font-size: 11px; font-weight: 600; letter-spacing: .06em; color: #555; text-transform: uppercase; }
+.versions a { color: #888; margin-right: 12px; }
 </style>
 </head>
 <body>
@@ -113,14 +142,11 @@ a { color: inherit; text-decoration: none; }
         <div class="hdr__nav"><span>SERVICES</span><span>PORTFOLIO</span><span>ABOUT</span><span>BLOG</span><span>CAREERS</span><span>OUR GAMES</span><span class="hdr__cta">HIRE US</span></div>
     </div>
 
-    <div class="sketch" aria-hidden="true">
-        <div class="sketch__tile sketch__tile--tall">Featured</div>
-        <div class="sketch__tile sketch__tile--tall">Featured</div>
-        <div class="sketch__tile sketch__tile--tall">Featured</div>
-        <div class="sketch__tile sketch__tile--tall">Featured</div>
+    <div class="filters" aria-hidden="true">
+        <span class="filters__chip filters__chip--on">All</span><span class="filters__chip">Slots</span><span class="filters__chip">Props</span><span class="filters__chip">Isometric</span><span class="filters__chip">Characters</span><span class="filters__chip">Environment</span><span class="filters__chip">Hard-Surface</span><span class="filters__chip">Marketing Art</span><span class="filters__chip">Asset Store</span>
     </div>
 
-    <div class="section-gap"></div>
+    <div class="featured" id="featured"></div>
 
     <section class="cs" id="coming-soon" aria-labelledby="coming-soon-title">
         <div class="cs__head">
@@ -136,48 +162,67 @@ a { color: inherit; text-decoration: none; }
         <p class="note" data-measure></p>
     </section>
 
-    <div class="section-gap"></div>
+    <div class="grid" id="grid"></div>
 
-    <div class="sketch" aria-hidden="true">
-        <div class="sketch__tile">Grid tile</div>
-        <div class="sketch__tile">Grid tile</div>
-        <div class="sketch__tile">Grid tile</div>
-        <div class="sketch__tile">Grid tile</div>
-    </div>
-
-    <div class="section-gap"></div>
+    <p class="versions">Versions: <a href="./">v3 — this</a> <a href="v2.html">v2 — date on the cover</a> <a href="v1.html">v1 — A/B, before review</a></p>
 </div>
 
 <script>
 (function () {
     'use strict';
 
-    // The nine projects the live block shows on 17.09.2026, in release-date order.
-    var CARDS = [
-        { iso: '2026-09-22', date: '22.09.2026', title: 'Last Wizard Co-op Kit', major: false, href: 'https://retrostylegames.com/portfolio/last-wizard-coop-friendslop-asset-pack/', img: 'https://images.retrostylegames.com/wp-content/uploads/2026/07/last-wizard-key-art-square-store-480x480.jpg' },
-        { iso: '2026-09-25', date: '25.09.2026', title: 'Odin’s Vault', major: true, href: 'https://retrostylegames.com/portfolio/odin-vault-2d-slot-art-and-character/', img: 'https://images.retrostylegames.com/wp-content/uploads/2026/08/OdinsVault-ComingSoon-972972-site-480x480.jpg' },
-        { iso: '2026-11-06', date: '06.11.2026', title: 'Adventure Escape Mysteries', major: false, href: 'https://retrostylegames.com/portfolio/adventure-escape-mysteries-realistic-2d-art/', img: 'https://images.retrostylegames.com/wp-content/uploads/2026/07/Haiku_E43_02_972972-no_label-480x480.jpg' },
-        { iso: '2026-11-13', date: '13.11.2026', title: 'Guardians of the Wild Sky', major: true, href: 'https://retrostylegames.com/portfolio/guardians-of-the-wild-sky-3d-fantasy-characters-and-creatures/', img: 'https://images.retrostylegames.com/wp-content/uploads/2026/04/Guardians-of-the-Wild-Sky-st02-972%D1%85972-768x768.jpg' },
-        { iso: '2026-11-19', date: '19.11.2026', title: 'Iron Games', major: false, href: 'https://retrostylegames.com/portfolio/iron-games-ui-ux-icon-design/', img: 'https://images.retrostylegames.com/wp-content/uploads/2026/06/diggy-match-portfolio-art-480x480.png' },
-        { iso: '2026-11-24', date: '24.11.2026', title: 'Little Monsters', major: false, href: 'https://retrostylegames.com/portfolio/little-monsters-3d-slot-game-characters-and-backgrounds/', img: 'https://images.retrostylegames.com/wp-content/uploads/2026/05/972%D1%85972-clean-768x768.png' },
-        { iso: '2026-11-26', date: '26.11.2026', title: 'Puzzle Town Mysteries', major: false, href: 'https://retrostylegames.com/portfolio/puzzle-town-mysteries-ui-ux-character-design/', img: 'https://images.retrostylegames.com/wp-content/uploads/2026/07/Puzzle-Town-Mysteries-Cover-480x480.jpg' },
-        { iso: '2026-11-30', date: '30.11.2026', title: 'Silkroad Online', major: false, href: 'https://retrostylegames.com/portfolio/silkroad-online-3d-character-outfits-and-skins/', img: 'https://images.retrostylegames.com/wp-content/uploads/2026/05/Gamegami-Silkroad-Part2-st02-972%D1%85972-800x800.jpg' },
-        { iso: '2026-12-04', date: '04.12.2026', title: 'Titan Ways', major: false, href: 'https://retrostylegames.com/portfolio/titan-ways-slot-game-art-and-ui/', img: 'https://images.retrostylegames.com/wp-content/uploads/2026/08/TitanWays-ComingSoon-972972_Site-01-800x800.jpg' }
+    var IMG = 'https://images.retrostylegames.com/wp-content/uploads/';
+
+    // Featured on /portfolio/ on 17.09.2026: covers, captions, metrics and partner logos as served.
+    var FEATURED = [
+        { href: 'https://retrostylegames.com/portfolio/love-and-pies-casual-ui-ux-environments/', img: IMG + '2026/03/Love-and-pies-casual-game-art-project-thumbnail-800x800.webp', title: 'Love & Pies', kicker: 'UI/UX Design & Isometric Environments', metrics: [['5M+', 'Downloads'], ['★ 4.4', 'Rating'], ['199K+', 'Reviews']], partner: IMG + '2025/10/Logo-Trail-Mix-bw.svg' },
+        { href: 'https://retrostylegames.com/portfolio/blue-prince-3d-character-modeling-animation/', img: IMG + '2025/12/Logo-Blue-prince-puzzle-game-stylized-by-RetroStyle-Games-studio-800x800.webp', title: 'Blue Prince', kicker: '3D Character Modeling & Animation', metrics: [['20K+', 'Reviews'], ['900K+', 'Game Sales'], ['19.2K', 'Peak CCU']], partner: IMG + '2026/09/Company-Logo_Raw-Fury-300x207.png' },
+        { href: 'https://retrostylegames.com/portfolio/episode-2d-game-art-and-character-design/', img: IMG + '2026/07/episode-reality-stars-key-art-800x800.jpg', title: 'Episode', kicker: '2D Art Style for Choice Based Game', metrics: [['100M+', 'Downloads'], ['7.1M+', 'Reviews']], partner: IMG + '2025/10/Logo-PocketGems.svg' },
+        { href: 'https://retrostylegames.com/portfolio/the-last-caretaker-hard-surface-pbr-props/', img: IMG + '2025/12/The-Last-Caretaker-site-972x972-title-01-800x800.webp', title: 'The Last Caretaker', kicker: 'Hard Surface PBR Props', metrics: [['13K+', 'Reviews'], ['500K+', 'Game Sales'], ['10.7K', 'Peak CCU']], partner: IMG + '2026/09/Company-Logo_Channel-37-300x132.png' }
     ];
 
-    function card(c, i) {
-        var li = document.createElement('li');
-        li.className = 'cs__item' + (c.major ? ' cs__item--major' : '');
-        li.innerHTML =
-            '<a class="cs__link" href="' + c.href + '">' +
-                '<div class="cs__cover">' +
-                    '<time class="cs__date" datetime="' + c.iso + '">' + c.date + (c.major ? '<span class="visually-hidden">, major release</span>' : '') + '</time>' +
-                    '<img src="' + c.img + '" alt="" width="480" height="480" decoding="async" loading="' + (i < 5 ? 'eager' : 'lazy') + '">' +
-                '</div>' +
-                '<span class="cs__name">' + c.title + '</span>' +
-            '</a>';
-        return li;
-    }
+    // The nine upcoming projects, in release-date order.
+    var CARDS = [
+        { iso: '2026-09-22', date: '22.09.2026', title: 'Last Wizard Co-op Kit', kind: 'Friendslop Stylized Assets', href: 'https://retrostylegames.com/portfolio/last-wizard-coop-friendslop-asset-pack/', img: IMG + '2026/07/last-wizard-key-art-square-store-480x480.jpg' },
+        { iso: '2026-09-25', date: '25.09.2026', title: 'Odin’s Vault', kind: 'Slot 2D Art & Character Design', href: 'https://retrostylegames.com/portfolio/odin-vault-2d-slot-art-and-character/', img: IMG + '2026/08/OdinsVault-ComingSoon-972972-site-480x480.jpg' },
+        { iso: '2026-11-06', date: '06.11.2026', title: 'Adventure Escape Mysteries', kind: '2D Character Art & Background', href: 'https://retrostylegames.com/portfolio/adventure-escape-mysteries-realistic-2d-art/', img: IMG + '2026/07/Haiku_E43_02_972972-no_label-480x480.jpg' },
+        { iso: '2026-11-13', date: '13.11.2026', title: 'Guardians of the Wild Sky', kind: '3D Fantasy Character Models', href: 'https://retrostylegames.com/portfolio/guardians-of-the-wild-sky-3d-fantasy-characters-and-creatures/', img: IMG + '2026/04/Guardians-of-the-Wild-Sky-st02-972%D1%85972-768x768.jpg' },
+        { iso: '2026-11-19', date: '19.11.2026', title: 'Iron Games', kind: 'UI/UX & Icon Design', href: 'https://retrostylegames.com/portfolio/iron-games-ui-ux-icon-design/', img: IMG + '2026/06/diggy-match-portfolio-art-480x480.png' },
+        { iso: '2026-11-24', date: '24.11.2026', title: 'Little Monsters', kind: '3D Slot Game Characters, Backgrounds & UI/UX', href: 'https://retrostylegames.com/portfolio/little-monsters-3d-slot-game-characters-and-backgrounds/', img: IMG + '2026/05/972%D1%85972-clean-768x768.png' },
+        { iso: '2026-11-26', date: '26.11.2026', title: 'Puzzle Town Mysteries', kind: '2D Backgrounds, Characters & UI/UX', href: 'https://retrostylegames.com/portfolio/puzzle-town-mysteries-ui-ux-character-design/', img: IMG + '2026/07/Puzzle-Town-Mysteries-Cover-480x480.jpg' },
+        { iso: '2026-11-30', date: '30.11.2026', title: 'Silkroad Online', kind: '3D Game Character Outfits & Accessories', href: 'https://retrostylegames.com/portfolio/silkroad-online-3d-character-outfits-and-skins/', img: IMG + '2026/05/Gamegami-Silkroad-Part2-st02-972%D1%85972-800x800.jpg' },
+        { iso: '2026-12-04', date: '04.12.2026', title: 'Titan Ways', kind: 'Slot Game Art & UI/UX', href: 'https://retrostylegames.com/portfolio/titan-ways-slot-game-art-and-ui/', img: IMG + '2026/08/TitanWays-ComingSoon-972972_Site-01-800x800.jpg' }
+    ];
+
+    // The first six grid tiles under the strip, as served on the same day.
+    var GRID = [
+        { href: 'https://retrostylegames.com/portfolio/titan-clash-stylized-3d-character-pack/', img: IMG + '2026/08/RSG-Assets-3D-Character-Cover-title-PAID-site-artstation-972%D1%85972-01-1-800x800.jpg', title: 'Fortnite-Style Stylized 3D Character Pack | Titan Clash', text: 'A game-ready Fortnite-style stylized 3D character pack: rigged and skinned, 17 animations, Unity and Unreal projects, plus working source files.' },
+        { href: 'https://retrostylegames.com/portfolio/midas-multiplier-gold-slot-art/', img: IMG + '2026/07/midas-multiplier-cover-800x800.jpg', title: 'Gold 2D Slot Art & Animation | Midas Multiplier', text: '' },
+        { href: 'https://retrostylegames.com/portfolio/tome-of-hades-mythology-slot-art/', img: IMG + '2026/05/Valkyrie-Slot-Tom-of-Hades-st02-972%D1%85972-800x800.jpg', title: 'Greek Mythology 2D Slot Art & Animation | Tome of Hades', text: '' },
+        { href: 'https://retrostylegames.com/portfolio/crown-of-kemet-egyptian-slot-asset-pack/', img: IMG + '2026/07/SlotPack-PAID-Cover-972x972-Site.png-800x800.jpg', title: 'Egyptian Slot Asset Pack | Crown of Kemet', text: '' },
+        { href: 'https://retrostylegames.com/portfolio/horse-racing-solitaire-3d-pre-release-support/', img: IMG + '2026/07/horse-racing-solitaire-app-icon-key-art-480x480.png', title: 'Casual 3D Game Art for a Horse Racing Game | Horse Racing Solitaire', text: '' },
+        { href: 'https://retrostylegames.com/portfolio/lysward-2d-concepts-and-3d-character-game-art/', img: IMG + '2026/07/lysward-character-key-art-icon-480x480.jpg', title: 'Stylized Desert Exploration Game Art | Lysward', text: '' }
+    ];
+
+    function el(tag, cls, html) { var n = document.createElement(tag); if (cls) { n.className = cls; } if (html !== undefined) { n.innerHTML = html; } return n; }
+
+    document.getElementById('featured').append.apply(document.getElementById('featured'), FEATURED.map(function (f) {
+        var a = el('a', 'ftile'); a.href = f.href;
+        a.innerHTML =
+            '<img class="ftile__img" src="' + f.img + '" alt="" width="800" height="800" decoding="async">' +
+            '<div class="ftile__panel"><div><h3 class="ftile__title">' + f.title + '</h3><p class="ftile__kicker">' + f.kicker + '</p></div>' +
+                '<div class="ftile__metrics">' + f.metrics.map(function (m) { return '<div class="ftile__metric"><b>' + m[0] + '</b><span>' + m[1] + '</span></div>'; }).join('') + '</div></div>' +
+            '<div class="ftile__partner"><img src="' + f.partner + '" alt="" loading="lazy"></div>';
+        return a;
+    }));
+
+    document.getElementById('grid').append.apply(document.getElementById('grid'), GRID.map(function (g) {
+        var a = el('a', 'gtile'); a.href = g.href;
+        a.innerHTML =
+            '<img class="gtile__img" src="' + g.img + '" alt="" width="800" height="800" loading="lazy" decoding="async">' +
+            '<div class="gtile__overlay"><h3>' + g.title + '</h3>' + (g.text ? '<p>' + g.text + '</p>' : '') + '</div>';
+        return a;
+    }));
 
     var section = document.getElementById('coming-soon');
     var list = document.getElementById('coming-soon-list');
@@ -185,7 +230,16 @@ a { color: inherit; text-decoration: none; }
     var next = section.querySelector('[data-dir="1"]');
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    CARDS.forEach(function (c, i) { list.appendChild(card(c, i)); });
+    CARDS.forEach(function (c, i) {
+        var li = el('li', 'cs__item');
+        li.innerHTML =
+            '<a class="cs__link" href="' + c.href + '">' +
+                '<div class="cs__cover"><img src="' + c.img + '" alt="" width="480" height="480" decoding="async" loading="' + (i < 5 ? 'eager' : 'lazy') + '"></div>' +
+                '<div class="cs__meta"><span class="cs__name">' + c.title + '</span><time class="cs__date" datetime="' + c.iso + '">' + c.date + '</time></div>' +
+                '<p class="cs__kind">' + c.kind + '</p>' +
+            '</a>';
+        list.appendChild(li);
+    });
     section.querySelector('[data-count]').textContent = String(CARDS.length);
 
     function sync() {
@@ -207,20 +261,17 @@ a { color: inherit; text-decoration: none; }
         list.scrollBy({ left: dir * unit * visible, behavior: reduced ? 'auto' : 'smooth' });
     }
 
-    // Live numbers in the page, so a screenshot carries them. Measured on load and resize only.
     function measure() {
         var note = section.querySelector('[data-measure]');
         var h = Math.round(section.getBoundingClientRect().height - note.getBoundingClientRect().height - 8);
         var pct = Math.round(h / window.innerHeight * 100);
         var w = Math.round(list.querySelector('.cs__item').getBoundingClientRect().width);
-        note.innerHTML = 'strip <b>' + h + 'px</b> = <b>' + pct + '%</b> of a ' + window.innerWidth + '×' + window.innerHeight + ' viewport · card ' + w + 'px';
+        note.innerHTML = 'strip <b>' + h + 'px</b> = <b>' + pct + '%</b> of a ' + window.innerWidth + '×' + window.innerHeight + ' viewport · card ' + w + 'px · gap above/below ' + getComputedStyle(section).marginTop;
     }
 
     prev.addEventListener('click', function () { step(-1); });
     next.addEventListener('click', function () { step(1); });
     list.addEventListener('scroll', sync, { passive: true });
-
-    // The container, not the viewport: a tab switch or a fold changes the row's width without a resize.
     if ('ResizeObserver' in window) {
         new ResizeObserver(function () { sync(); measure(); }).observe(list);
     } else {
