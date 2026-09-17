@@ -3,17 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coming Soon strip — v4 (bigger covers, date in the corner)</title>
+<title>Coming Soon strip — v3 (date under the cover)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 /*
- * v4 of the Coming Soon strip. Changes against v3, from the owner's feedback:
- *   - covers a third larger: 240 px on desktop, 200 px on tablets
- *   - on phones the card width is derived from the screen so that two and a half cards show,
- *     and the row runs under the right screen edge; 138 px at 375, 160 px at 430
- *   - the date is a pill in the top-right corner of the cover; a major release is red
- *   - under the cover only the title and the kind of work
+ * v3 of the Coming Soon strip. Changes against v2, from the owner's feedback:
+ *   - nothing is drawn over the artwork: date, title and kind of work sit under the square
+ *   - date on the right of the title, kind of work in grey under both
+ *   - one date colour for every project (the red pill for "major" is gone)
  * The surroundings are real: the Featured tiles and the first grid tiles of /portfolio/ on
  * 17.09.2026, with the live site's sizes, radii, borders and partner band.
  */
@@ -25,15 +23,14 @@
     --red: #B61A39;
     --date: #C4223F;
     --tile-border: rgba(242, 242, 242, .1);
-    --card: 240px;
+    --card: 176px;
     --gap: 12px;
     --radius: 14px;
     --inset: 40px;
     --strip-gap: 32px;
 }
-@media (max-width: 1023px) { :root { --card: 200px; --inset: 24px; } }
-/* Two and a half cards across the screen: the strip starts at the inset and runs under the right edge. */
-@media (max-width: 767px)  { :root { --card: min(200px, calc((100vw - var(--inset) + var(--gap)) / 2.5 - var(--gap))); --inset: 16px; --gap: 10px; --radius: 12px; --strip-gap: 24px; } }
+@media (max-width: 1023px) { :root { --card: 152px; --inset: 24px; } }
+@media (max-width: 767px)  { :root { --card: 136px; --inset: 16px; --gap: 10px; --radius: 12px; --strip-gap: 24px; } }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--text); font-family: Montserrat, sans-serif; }
@@ -99,11 +96,6 @@ a { color: inherit; text-decoration: none; }
 .cs__arrow:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
 .cs__scroller { position: relative; }
-@media (max-width: 767px) {
-    .cs__scroller { margin-right: calc(-1 * var(--inset)); }
-    .cs__scroller::after { display: none; }
-    .cs__list { padding-right: var(--inset); }
-}
 .cs__scroller::before, .cs__scroller::after { content: ""; position: absolute; top: 0; bottom: 0; width: 16px; pointer-events: none; z-index: 2; opacity: 0; transition: opacity .2s; }
 .cs__scroller::before { left: 0; background: linear-gradient(90deg, var(--bg), transparent); }
 .cs__scroller::after { right: 0; background: linear-gradient(270deg, var(--bg), transparent); }
@@ -119,24 +111,22 @@ a { color: inherit; text-decoration: none; }
 .cs__link:focus-visible { outline: none; }
 .cs__link:focus-visible .cs__cover { box-shadow: inset 0 0 0 2px var(--text); }
 
-.cs__cover { position: relative; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--tile-border); background: #222; }
+/* The cover is the whole square; nothing is drawn over it. */
+.cs__cover { aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--tile-border); background: #222; }
 .cs__cover img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
 .cs__link:hover .cs__cover img { transform: scale(1.05); }
 
-/* The date is a pill in the top-right corner of the cover: opaque, so it reads on any art.
-   A major release (the editor's checkbox) is red, as the bigger dot is on the live timeline. */
-.cs__date { position: absolute; top: 8px; right: 8px; z-index: 1; padding: 4px 8px; border-radius: 7px; background: rgba(22,22,22,.92); font-weight: 600; font-size: 12px; line-height: 14px; color: #fff; letter-spacing: .02em; }
-.cs__item--major .cs__date { background: radial-gradient(80% 80% at 50% 50%, #C21A3C 0%, #B61A39 60%, #5C0D1D 100%); }
-
-/* Under the square: the title on two reserved lines, the kind of work in grey. */
-.cs__meta { margin: 8px 2px 0; }
-.cs__name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 0; font-weight: 700; font-size: 13px; line-height: 17px; height: 34px; color: var(--text); }
-.cs__kind { margin: 2px 2px 0; font-weight: 400; font-size: 12px; line-height: 15px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Under the square: title with the date on its right, then the kind of work in grey.
+   Two title lines are reserved so the row keeps one height. */
+.cs__meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin: 8px 2px 0; }
+.cs__name { flex: 1 1 auto; min-width: 0; margin: 0; font-weight: 700; font-size: 12px; line-height: 16px; height: 32px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cs__date { flex: 0 0 auto; font-weight: 600; font-size: 11px; line-height: 16px; color: var(--date); white-space: nowrap; }
+.cs__kind { margin: 2px 2px 0; font-weight: 400; font-size: 11px; line-height: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cs__link:hover .cs__name { color: #fff; }
+/* Under 768 the card is 136 px: a date beside the title leaves it one word, so the date drops under the title. */
 @media (max-width: 767px) {
-    .cs__date { font-size: 11px; padding: 3px 7px; top: 6px; right: 6px; }
-    .cs__name { font-size: 12px; line-height: 16px; height: 32px; }
-    .cs__kind { font-size: 11px; line-height: 14px; }
+    .cs__meta { flex-direction: column; gap: 2px; }
+    .cs__date { line-height: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -144,7 +134,6 @@ a { color: inherit; text-decoration: none; }
     .cs__link:hover .cs__cover img { transform: none; }
 }
 
-.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .note { margin: 8px 0 0; font-size: 11px; line-height: 16px; color: #666; font-weight: 600; letter-spacing: .04em; }
 .note b { color: #999; }
 .versions { margin: 48px 0 24px; font-size: 11px; font-weight: 600; letter-spacing: .06em; color: #555; text-transform: uppercase; }
@@ -181,7 +170,7 @@ a { color: inherit; text-decoration: none; }
 
     <div class="grid" id="grid"></div>
 
-    <p class="versions">Versions: <a href="./">v4 — this</a> <a href="v3.html">v3 — smaller, date beside the title</a> <a href="v2.html">v2 — date on the cover</a> <a href="v1.html">v1 — A/B, before review</a></p>
+    <p class="versions">Versions: <a href="./">v3 — this</a> <a href="v2.html">v2 — date on the cover</a> <a href="v1.html">v1 — A/B, before review</a></p>
 </div>
 
 <script>
@@ -201,9 +190,9 @@ a { color: inherit; text-decoration: none; }
     // The nine upcoming projects, in release-date order.
     var CARDS = [
         { iso: '2026-09-22', date: '22.09.2026', title: 'Last Wizard Co-op Kit', kind: 'Friendslop Stylized Assets', href: 'https://retrostylegames.com/portfolio/last-wizard-coop-friendslop-asset-pack/', img: IMG + '2026/07/last-wizard-key-art-square-store-480x480.jpg' },
-        { iso: '2026-09-25', date: '25.09.2026', major: true, title: 'Odin’s Vault', kind: 'Slot 2D Art & Character Design', href: 'https://retrostylegames.com/portfolio/odin-vault-2d-slot-art-and-character/', img: IMG + '2026/08/OdinsVault-ComingSoon-972972-site-480x480.jpg' },
+        { iso: '2026-09-25', date: '25.09.2026', title: 'Odin’s Vault', kind: 'Slot 2D Art & Character Design', href: 'https://retrostylegames.com/portfolio/odin-vault-2d-slot-art-and-character/', img: IMG + '2026/08/OdinsVault-ComingSoon-972972-site-480x480.jpg' },
         { iso: '2026-11-06', date: '06.11.2026', title: 'Adventure Escape Mysteries', kind: '2D Character Art & Background', href: 'https://retrostylegames.com/portfolio/adventure-escape-mysteries-realistic-2d-art/', img: IMG + '2026/07/Haiku_E43_02_972972-no_label-480x480.jpg' },
-        { iso: '2026-11-13', date: '13.11.2026', major: true, title: 'Guardians of the Wild Sky', kind: '3D Fantasy Character Models', href: 'https://retrostylegames.com/portfolio/guardians-of-the-wild-sky-3d-fantasy-characters-and-creatures/', img: IMG + '2026/04/Guardians-of-the-Wild-Sky-st02-972%D1%85972-768x768.jpg' },
+        { iso: '2026-11-13', date: '13.11.2026', title: 'Guardians of the Wild Sky', kind: '3D Fantasy Character Models', href: 'https://retrostylegames.com/portfolio/guardians-of-the-wild-sky-3d-fantasy-characters-and-creatures/', img: IMG + '2026/04/Guardians-of-the-Wild-Sky-st02-972%D1%85972-768x768.jpg' },
         { iso: '2026-11-19', date: '19.11.2026', title: 'Iron Games', kind: 'UI/UX & Icon Design', href: 'https://retrostylegames.com/portfolio/iron-games-ui-ux-icon-design/', img: IMG + '2026/06/diggy-match-portfolio-art-480x480.png' },
         { iso: '2026-11-24', date: '24.11.2026', title: 'Little Monsters', kind: '3D Slot Game Characters, Backgrounds & UI/UX', href: 'https://retrostylegames.com/portfolio/little-monsters-3d-slot-game-characters-and-backgrounds/', img: IMG + '2026/05/972%D1%85972-clean-768x768.png' },
         { iso: '2026-11-26', date: '26.11.2026', title: 'Puzzle Town Mysteries', kind: '2D Backgrounds, Characters & UI/UX', href: 'https://retrostylegames.com/portfolio/puzzle-town-mysteries-ui-ux-character-design/', img: IMG + '2026/07/Puzzle-Town-Mysteries-Cover-480x480.jpg' },
@@ -248,14 +237,11 @@ a { color: inherit; text-decoration: none; }
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     CARDS.forEach(function (c, i) {
-        var li = el('li', 'cs__item' + (c.major ? ' cs__item--major' : ''));
+        var li = el('li', 'cs__item');
         li.innerHTML =
             '<a class="cs__link" href="' + c.href + '">' +
-                '<div class="cs__cover">' +
-                    '<time class="cs__date" datetime="' + c.iso + '">' + c.date + (c.major ? '<span class="visually-hidden">, major release</span>' : '') + '</time>' +
-                    '<img src="' + c.img + '" alt="" width="480" height="480" decoding="async" loading="' + (i < 5 ? 'eager' : 'lazy') + '">' +
-                '</div>' +
-                '<div class="cs__meta"><span class="cs__name">' + c.title + '</span></div>' +
+                '<div class="cs__cover"><img src="' + c.img + '" alt="" width="480" height="480" decoding="async" loading="' + (i < 5 ? 'eager' : 'lazy') + '"></div>' +
+                '<div class="cs__meta"><span class="cs__name">' + c.title + '</span><time class="cs__date" datetime="' + c.iso + '">' + c.date + '</time></div>' +
                 '<p class="cs__kind">' + c.kind + '</p>' +
             '</a>';
         list.appendChild(li);
